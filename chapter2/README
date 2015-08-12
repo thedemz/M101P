@@ -1,8 +1,10 @@
-#Import the data
-mongoimport -d students -c grades < grades.json
-
+#Project uses Python3.X
 #Install Python modules
 pip install --target="./lib" -r requirements.txt
 
 #Run mongodb
 mongodb --dbpath="./db"
+
+#Import the data
+mongoimport -d students -c grades < grades.json
+
