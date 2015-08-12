@@ -1,0 +1,8 @@
+#Import the data
+mongoimport -d students -c grades < grades.json
+
+#Install Python modules
+pip install --target="./lib" -r requirements.txt
+
+#Run mongodb
+mongodb --dbpath="./db"
