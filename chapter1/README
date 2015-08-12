@@ -1,0 +1,7 @@
+#Project uses Python3.X
+
+#Install Python modules
+pip install --target="./lib" -r requirements.txt
+
+#Start mongodb
+mongod --dbpath="./db"
