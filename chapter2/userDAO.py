@@ -15,10 +15,19 @@
 #
 #
 
+import sys
+import os
 import hmac
 import random
 import string
 import hashlib
+
+file_path = os.path.abspath(__file__)
+dir_path = os.path.dirname(file_path)
+lib_path = os.path.join(dir_path, "lib")
+
+sys.path.insert(0, lib_path)
+
 import pymongo
 
 
