@@ -1,0 +1,19 @@
+#Project uses Python3.X
+#Install Python modules
+pip install --target="./lib" -r requirements.txt
+
+#Run mongodb
+mongodb --dbpath="./db"
+
+### ###############################
+### Import the data
+### ###############################
+
+# HW4-3
+
+mongoimport -d blog -c posts < data/posts.json
+
+# HW4-4
+
+mongoimport -d m101 -c profile < data/sysprofile.json
+

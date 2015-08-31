@@ -1,0 +1,20 @@
+
+Engines:
+
+MMAP
+WiredTiger
+
+
+The mongo shell command to create a unique index on student_id, class_id, ascending for the collection students.
+
+db.students.createIndex({"student_id":1, "class_id":1}, {"unique": true});
+
+Sparse index
+
+db.students.createIndex({"student_id":1, "class_id":1}, {"unique": true, "sparse": true});
+
+
+db.students.createIndex({"score.scores":1}, {"background": true});
+
+
+
