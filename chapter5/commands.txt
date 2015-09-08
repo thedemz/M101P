@@ -1,0 +1,485 @@
+### #########################################
+### Simple Aggregation Example
+### #########################################
+db.products.aggregate([
+    {"$group":
+        {
+            "_id":"$manufacturer",
+            "num_products":{"$sum":1}
+        }
+    },
+])
+
+result: [{"_id": "apple", "num_products": 123}, ...]
+
+QUIZ ANSWERE: SIMPLE AGGREGATION EXAMPLE
+db.products.aggregate([{$group:{"_id":"$category", "num_products":{"$sum":1}}}])
+
+
+
+### ###################################
+### Aggregation Pipeline:
+### ###################################
+
+
+Collection -> $project -> $match -> $group -> $sort -> $skip -> $limit ->
+
+$project, reshapes the collection
+$match, filter step
+$group, aggregation like sum and count.
+$sort, sort the result
+$skip, skips forward
+$limit, limits the result
+$unwind, normalize; expands the document
+$out
+
+$redact,
+$geonear,
+
+
+
+### ####################################
+### Compund Grouping
+### ####################################
+
+db.products.aggregate([
+    {"$group":
+        {
+            "_id":{"maker": "$manufacturer", "category": "$category"},
+            "num_products":{"$sum":1}
+        }
+    },
+])
+
+db.products.aggregate([
+    {"$group":
+        {
+            "_id":{"manufacturer": "$manufacturer"},
+            "num_products":{"$sum":1}
+        }
+    },
+])
+
+
+### ######################################
+### Aggregation expressions for $group
+### ######################################
+
+$sum, count or sum the key
+$avg,
+$min
+$max
+
+$push, creates array
+$addToSet, creates array
+
+$first, must be sorted
+$last, must be sorted
+
+
+### $sum
+
+db.products.aggregate([
+    {"$group":
+        {
+            "_id":{"maker": $manufacturer"},
+            "sum_prices":{"$sum":"$price"}
+        }
+    },
+])
+
+db.zips.aggregate([
+    {
+    "$group":
+        {"_id":"$state",
+        "population":{"$sum":"$pop"}
+        }
+    }
+])
+
+### $avg
+
+db.products.aggregate([
+    {"$group":
+        {
+            "_id":{"category": $category"},
+            "avg_price":{"$avg":"$price"}
+        }
+    },
+])
+
+db.zips.aggregate([{"$group":{"_id":"$state","avg_population":{"$avg":"$pop"}}}])
+{ "_id" : "NY", "avg_population" : 9705.34 }
+{ "_id" : "NJ", "avg_population" : 16949.9 }
+{ "_id" : "CT", "avg_population" : 13226.48 }
+{ "_id" : "CA", "avg_population" : 19067.72 }
+
+
+
+### addToSet
+
+db.products.aggregate([
+    {"$group":
+        {
+            "_id":{"maker": $manufacturer"},
+            "categories":{"$addToSet":"$category"}
+        }
+    },
+])
+
+
+db.zips.aggregate([
+{"$group":
+    {"_id": "$city",
+    "postal_codes":{"$addToSet":"$_id"}
+    }
+}])
+
+
+
+
+### push
+
+db.products.aggregate([
+    {"$group":
+        {
+            "_id":{"maker": $manufacturer"},
+            "categories":{"$push":"$category"}
+        }
+    },
+])
+
+
+### max and min
+
+db.products.aggregate([
+    {"$group":
+        {
+            "_id":{"maker": $manufacturer"},
+            "maxprice":{"$max":"$price"}
+        }
+    },
+])
+
+db.zips.aggregate([
+        {"$group": {
+
+        "_id": "$state",
+        "pop":{"$max": "$pop"}}
+
+        }
+
+])
+
+
+### ##################################
+### Double Grouping
+### ##################################
+
+
+db.grades.aggregate([
+{"$group":
+
+{
+    "_id":{"class_id":"$class_id", "student_id":"$student_id"},
+    "average":{"$avg":"$score"}
+}
+
+},
+{"$group"
+
+{
+    "_id":"$_id.class_id",
+    "average":{"$avg":"$score"}
+}
+
+}
+])
+
+
+### ##################################
+### $project
+### ##################################
+
+db.products.aggregate([
+    {"$project":
+        {
+            "_id":0,
+            "maker": {"$toLower" : "$manufacturer"},
+            "details": {
+                "category" : "$category",
+                "price" : {"$multiply":["$price",10]}
+            },
+            "item", "$name"
+        }
+    },
+])
+
+
+db.zips.aggregate([
+{"$project":{
+    "_id":0,
+    "city":{"$toLower":"$city"},
+    "pop":1,
+    "state":1,
+    "zip":"$_id"
+    }
+}
+])
+
+### ####################################
+### $match
+### ####################################
+
+match filters the documents,
+
+db.zipps.aggregate([
+{"$match":
+    {"state":"CA"}
+},
+{"$group":
+    {
+        "_id":"$city",
+        "population":{"$sum":"$pop"},
+        "zip_codes":{"$addToSet": "$_id"}
+    }
+},
+{"$project":
+    {
+        "_id":0,
+        "city":"$_id",
+        "population":1,
+        "zip_codes":1
+    }
+}
+])
+
+
+
+db.zips.aggregate([
+{"$match":
+    {
+    "pop":{"$gt":100000}
+    }
+}
+])
+
+
+
+
+### ######################################
+### Full text search and aggregation
+### ######################################
+
+db.sentence.aggregate([
+{"$match":
+    {"$text": {"$search":"tree rat"}},
+},
+{"$sort":
+    {"score":{"$meta":"textScore"}}
+},
+{"$project":
+    {
+        "words":1,
+        "_id": 0
+    }
+}
+])
+
+$text is only allowed in the $match stage of the aggregation pipeline
+$text is only allowed within a $match that is the first stage of the aggregation pipeline
+
+
+### #######################################
+### $sort
+### #######################################
+
+Disk or memory based, Max 100 MB memory
+
+db.zips.aggregate([
+{"$sort":
+    {
+    "state": 1,
+    "city": 1
+    }
+}
+])
+
+
+### #######################################
+### $skip and then $limit
+### #######################################
+
+db.zips.aggregate([
+{"$sort":
+    {
+    "state": 1,
+    "city": 1
+    }
+},
+{"$skip": 10},
+{"$limit": 5}
+])
+
+db.zips.aggregate([
+{$match:
+    {
+    state:"NY"
+    }
+},
+{$group:
+    {
+    _id: "$city",
+    population: {$sum:"$pop"},
+    }
+},
+{$project:
+    {
+    _id: 0,
+    city: "$_id",
+    population: 1,
+    }
+},
+{$sort:
+    {
+    population:-1
+    }
+},
+{$limit: 5},
+{$skip: 10}
+])
+
+
+### ###########################################
+### $first and $last
+### ###########################################
+
+db.fun.aggregate([
+        {$match:{a:0}},
+        {$sort:{c:-1}},
+        {$group:{_id:"$a", c:{$first:"$c"}}}
+])
+
+
+### ###########################################
+### $unwind during aggreagtion
+### ###########################################
+
+This normalizes the data
+
+{a: 1: b: 2: c:[1,2,3]}
+
+{"$unwind": c}
+
+{a: 1: b: 2: c:1}
+{a: 1: b: 2: c:2}
+{a: 1: b: 2: c:3}
+
+
+use blog;
+db.posts.aggregate([
+/* unwind by tags */
+{"$unwind":"$tags"},
+/* now group by tags, counting each tag */
+{"$group":
+    {"_id":"$tags",
+    "count":{$sum:1}
+    }
+},
+/* sort by popularity */
+{"$sort":{"count":-1}},
+/* show me the top 10 */
+{"$limit": 10},
+/* change the name of _id to be tag */
+{"$project":
+    {_id:0,
+    'tag':'$_id',
+    'count' : 1
+    }
+}
+])
+
+
+### double $unwind
+
+db.inventory.insert({'name':"Polo Shirt", 'sizes':["Small", "Medium", "Large"], 'colors':['navy', 'white', 'orange', 'red']})
+
+db.inventory.aggregate([
+{$unwind: "$sizes"},
+{$unwind: "$colors"},
+{$group:
+    {
+    '_id': {'size':'$sizes', 'color':'$colors'},
+    'count' : {'$sum':1}
+    }
+}
+])
+
+### rewind example with two pushes in a row
+
+db.inventory.aggregate([
+        {$unwind: "$sizes"},
+        {$unwind: "$colors"},
+        /* create the color array */
+        {$group:
+        {
+        '_id': {name:"$name",size:"$sizes"},
+        'colors': {$push: "$colors"},
+        }
+        },
+        /* create the size array */
+        {$group:
+        {
+        '_id': {'name':"$_id.name",
+        'colors' : "$colors"},
+        'sizes': {$push: "$_id.size"}
+        }
+        },
+        /* reshape for beauty */
+        {$project:
+        {
+_id:0,
+    "name":"$_id.name",
+    "sizes":1,
+    "colors": "$_id.colors"
+        }
+        }
+])
+
+
+### ########################################
+### $out
+### ########################################
+
+$out redirects the output from an aggregation to a collection.
+
+NOTE: $out rewrites the collection.
+
+db.game.aggregate([
+{"$group":
+    {
+    "_id":{"first_name": "$first_name", "last_name": "$last_name"},
+    "points":{"$sum":"$points"}
+    }
+},
+{"$out":"summary_results"}
+])
+
+
+### ########################################
+### Aggregation Options
+### ########################################
+
+explain - query plan
+allowDiskUse - limited to 100 MB memory
+cursor -
+
+db.zips.aggregate( [ { $group : { _id : "$state" , population : { $sum : "$pop" } } } ] , { allowDiskUse : true } )
+
+
+In python, cursor={}
+
+In mongoDB 2.6, by default, in the shell, the aggregate method returns a cursor.
+In mongoDB 2.4, by default, PyMongo's aggregate method returns a single document.
+In mongoDB 2.6, by default, PyMongo's aggregate method returns a single document
+

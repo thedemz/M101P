@@ -17,4 +17,20 @@ db.students.createIndex({"student_id":1, "class_id":1}, {"unique": true, "sparse
 db.students.createIndex({"score.scores":1}, {"background": true});
 
 
+### #################################
+### Profiling
+### #################################
 
+mongod --dbpath="./db" --profile=1 --slowms=2
+
+
+# In mongo shell
+
+>do a query
+>db.system.profile.find().pretty()
+
+
+
+# HW4-4
+
+db.profile.find().sort({"millis": -1}).pretty()

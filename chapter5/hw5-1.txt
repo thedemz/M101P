@@ -1,0 +1,9 @@
+Finding the most frequent author of comments on your blog
+In this assignment you will use the aggregation framework to find the most frequent author of comments on your blog.
+We will be using a data set similar to ones we've used before.
+
+mongoimport --host=127.0.0.1 --port=27017 -d blog -c posts --drop "./data/posts.json"
+
+Now use the aggregation framework to calculate the author with the greatest number of comments.
+
+Hint: The author with the fewest comments is Mariela Sherer and she commented 387 times.

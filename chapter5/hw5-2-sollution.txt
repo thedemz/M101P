@@ -1,0 +1,73 @@
+use test
+show collections
+
+calculate the average population of cities in California (abbreviation CA) and New York (NY) (taken together) with populations over 25,000.
+
+For this problem, assume that a city name that appears in more than one state represents two separate cities.
+
+Please round the answer to a whole number.
+
+Hint: The answer for CT and NJ (using this data set) is 38177.
+
+Please note:
+
+Different states might have the same city name.
+A city might have multiple zip codes.
+
+> db.zips.find().limit(1)
+{ "_id" : "92278", "city" : "TWENTYNINE PALMS", "loc" : [ -116.06041, 34.237969 ], "pop" : 11412, "state" : "CA" }
+
+db.zips.aggregate([
+{"$match":
+    {"$or":[{"state":"CT"},{"state":"NJ"}]}
+},
+{"$group":
+    {
+        "_id":{"city": "$city", "state":"$state"},
+        "pop":{"$sum":"$pop"}
+    }
+},
+{"$match":
+    {
+        "pop":{"$gt": 25000}
+    }
+},
+{"$group":
+    {
+        "_id":0,
+        "avg_city_pop":{"$avg":"$pop"}
+    }
+},
+])
+
+{ "_id" : 0, "avg_city_pop" : 38176.63636363636 }
+
+
+
+db.zips.aggregate([
+{"$match":
+    {"$or":[{"state":"CA"},{"state":"NY"}]}
+},
+{"$group":
+    {
+        "_id":{"city": "$city", "state":"$state"},
+        "pop":{"$sum":"$pop"}
+    }
+},
+{"$match":
+    {
+        "pop":{"$gt": 25000}
+    }
+},
+{"$group":
+    {
+        "_id":0,
+        "avg_city_pop":{"$avg":"$pop"}
+    }
+},
+])
+
+
+{ "_id" : 0, "avg_city_pop" : 44804.782608695656 }
+
+

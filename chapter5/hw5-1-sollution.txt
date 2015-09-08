@@ -1,0 +1,34 @@
+calculate the author with the greatest number of comments
+
+use blog
+show collections
+
+db.posts.find({},{"_id":0, "body":0}).limit(1)
+
+"comments" : [ { "body" : "est laborum", "email" : "HvizfYVx@pKvLaagH.com", "author" : "Santiago Dollins" },
+
+
+
+db.posts.aggregate([
+{"$project":
+    {
+        "_id":0,
+        "comments":"$comments.author",
+    }
+},
+{"$unwind":
+    "$comments"
+},
+{"$group":
+    {
+        "_id":"$comments",
+        "count":{"$sum":1}
+    }
+},
+{"$sort":
+    {
+        "count":-1
+    }
+},
+{"$limit":10}
+])
