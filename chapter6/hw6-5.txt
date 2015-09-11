@@ -1,0 +1,44 @@
+In this homework you will build a small replica set on your own computer.
+
+Check that it works with validate.py
+
+Create three directories for the three mongod processes.
+
+$ mkdir -p db/rs1 db/rs2 db/rs3
+
+Now start three mongo instances as follows.
+
+$ mongod --replSet m101 --logpath "1.log" --dbpath db/rs1 --port 27017 --smallfiles --oplogSize 64 --fork
+
+$ mongod --replSet m101 --logpath "2.log" --dbpath db/rs2 --port 27018 --smallfiles --oplogSize 64 --fork
+
+$ mongod --replSet m101 --logpath "3.log" --dbpath db/rs3 --port 27019 --smallfiles --oplogSize 64 --fork
+
+Now connect to a mongo shell and make sure it comes up
+
+$ mongo --port 27017
+
+Now you will create the replica set. Type the following commands into the mongo shell:
+
+config = { _id: "m101", members:[
+    {_id : 0, host : "localhost:27017"},
+    {_id : 1, host : "localhost:27018"},
+    {_id : 2, host : "localhost:27019"}]
+};
+
+rs.initiate(config);
+
+
+At this point, the replica set should be coming up. You can type
+
+rs.status()
+
+to see the state of replication.
+
+
+Now run validate.py to confirm that it works.
+
+python validate.py
+
+
+Validate connects to your local replica set and checks that it has three nodes.
